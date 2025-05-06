@@ -73,6 +73,11 @@ function love.update(dt)
          player.hasJetpack = true
     end
 
+    -- Jetpack flying
+    if player.hasJetpack and love.keyboard.isDown("w") then
+        player.yVel = -200
+    end
+
 
 end
 
