@@ -20,4 +20,16 @@ function love.draw()
         love.graphics.rectangle("fill", plat.x, plat.y, plat.width, plat.height)
    end
 
+   -- Draw collectibles if collected is false
+   if not collectibles.spring.collected then
+      love.graphics.setColor(0.8, 0.9, 0.2) -- yellow
+      love.graphics.rectangle("fill", collectibles.spring.x, collectibles.spring.y, collectibles.spring.width, collectibles.spring.height) 
+   end
+
+   -- Draw jetpack if not collected
+    if not collectibles.jetpack.collected then
+        love.graphics.setColor(1.0, 0.2, 0.2) -- red
+        love.graphics.rectangle("fill", collectibles.jetpack.x, collectibles.jetpack.y, collectibles.jetpack.width, collectibles.jetpack.height)
+    end
+
 end
