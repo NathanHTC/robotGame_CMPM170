@@ -76,6 +76,13 @@ function love.update(dt)
 
 end
 
+function love.keypressed(key)
+    if key == "space" and player.onGround and player.hasSpring then
+        player.yVel = player.jumpForce
+        player.onGround = false
+    end
+end
+
 function checkCollision(a, b)
     return a.x < b.x + b.width and
            b.x < a.x + a.width and
