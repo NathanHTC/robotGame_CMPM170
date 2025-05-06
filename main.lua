@@ -33,3 +33,18 @@ function love.draw()
     end
 
 end
+
+function love.update(dt)
+   -- Horizontal movement
+   if love.keyboard.isDown("left") or love.keyboard.isDown("a") then
+      player.xVel = -player.speed
+   elseif love.keyboard.isDown("right") or love.keyboard.isDown("d") then
+      player.xVel = player.speed
+   else
+      player.xVel = 0
+   end
+
+   player.x = player.x + player.xVel * dt
+
+   
+end
