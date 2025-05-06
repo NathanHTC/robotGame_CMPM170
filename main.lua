@@ -7,9 +7,11 @@ collectibles = require("collectibles")
 function love.load()
     love.window.setTitle("Robot Game")
     love.window.setMode(800, 600)
+    background = love.graphics.newImage("assets/background/background 3/origbig.png")
 end
 
 function love.draw()
+   love.graphics.draw(background, 0, 0)
    -- Draw player
    love.graphics.setColor(0.2, 0.6, 1.0) -- Blue
    love.graphics.rectangle("fill", player.x, player.y, player.width, player.height)
