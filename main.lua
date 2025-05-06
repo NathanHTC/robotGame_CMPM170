@@ -69,7 +69,7 @@ function love.update(dt)
     end
 
     if not collectibles.jetpack.collected and checkCollision(player, collectibles.jetpack) then
-         collectibles.jetpack.colleceted = true
+         collectibles.jetpack.collected = true
          player.hasJetpack = true
     end
 
