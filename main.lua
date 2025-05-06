@@ -62,6 +62,17 @@ function love.update(dt)
         end
     end
 
+    -- Collectible collision
+    if not collectibles.spring.collected and checkCollision(player, collectibles.spring) then
+         collectibles.spring.collected = true
+         player.hasSpring = true
+    end
+
+    if not collectibles.jetpack.collected and checkCollision(player, collectibles.jetpack) then
+         collectibles.jetpack.colleceted = true
+         player.hasJetpack = true
+    end
+
 
 end
 
