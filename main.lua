@@ -44,7 +44,30 @@ function love.update(dt)
       player.xVel = 0
    end
 
+   -- apply movement
    player.x = player.x + player.xVel * dt
+   player.y = player.y + player.yVel * dt
 
-   
+   -- Apply gravity if not on onGround 
+   if not player.onGround or player.hasJetpack then
+      player.yVel = player.yVel + player.gravity * dt
+   end
+
+    -- Platform collision
+    for _, plat in ipairs(platforms) do
+        if checkCollision(player, plat) and player.y + player.height <= plat.y + 10 and player.yVel >= 0 then
+            player.y = plat.y - player.height
+            player.yVel = 0
+            player.onGround = true
+        end
+    end
+
+
+end
+
+function checkCollision(a, b)
+    return a.x < b.x + b.width and
+           b.x < a.x + a.width and
+           a.y < b.y + b.height and
+           b.y < a.y + a.height
 end
