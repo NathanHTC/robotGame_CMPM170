@@ -56,6 +56,34 @@ function love.draw()
         love.graphics.rectangle("fill", collectibles.jetpack.x, collectibles.jetpack.y, collectibles.jetpack.width, collectibles.jetpack.height)
     end
 
+    -- Draw instructions in top right corner
+    love.graphics.setColor(1, 1, 1) -- Set text color to white
+    local instructions = {
+        "Controls:",
+        "A/Left Arrow - Move Left",
+        "D/Right Arrow - Move Right",
+        "Space - Jump (with Spring)",
+        "W - Fly (with Jetpack)",
+        "",
+        "Items:",
+        "Yellow Box - Spring",
+        "Red Box - Jetpack"
+    }
+    
+    local x = love.graphics.getWidth() - 220 -- Position from right edge
+    local y = 20 -- Position from top
+    local lineHeight = 18
+    
+    -- Draw a semi-transparent background for better readability
+    love.graphics.setColor(0, 0, 0, 0.7)
+    love.graphics.rectangle("fill", x - 10, y - 10, 210, #instructions * lineHeight + 10)
+    
+    -- Draw the instructions text
+    love.graphics.setColor(1, 1, 1)
+    for i, line in ipairs(instructions) do
+        love.graphics.print(line, x, y + (i-1) * lineHeight)
+    end
+
 end
 
 function love.update(dt)
@@ -82,7 +110,7 @@ function love.update(dt)
    player.y = player.y + player.yVel * dt
 
    -- Apply gravity if not on onGround 
-   if not player.onGround or player.hasJetpack then
+   if not player.onGround or player.hasJetpack or player.hasSpring then
       player.yVel = player.yVel + player.gravity * dt
    end
 
