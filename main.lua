@@ -12,6 +12,24 @@ function love.load()
     love.window.setTitle("Robot Game")
     love.window.setMode(800, 600)
 
+
+    --Load Collectables
+    springImage = love.graphics.newImage("assets/collectibles/spring.png")
+    jetpackImage = love.graphics.newImage("assets/collectibles/jetpack.png")
+    
+    -- Get original image sizes
+    local springW, springH = springImage:getWidth(), springImage:getHeight()
+    local jetpackW, jetpackH = jetpackImage:getWidth(), jetpackImage:getHeight()
+    
+    -- Calculate scale to fit 20x20
+    springScaleX = 30 / springW
+    springScaleY = 30 / springH
+    
+    jetpackScaleX = 30 / jetpackW
+    jetpackScaleY = 30 / jetpackH
+    
+
+
     --Load Player Sprite
     player.spriteSheet = love.graphics.newImage('assets/Character/PlayerSprite/Prototype_Character.png')
     player.grid = anim8.newGrid(32,32, player.spriteSheet:getWidth(),player.spriteSheet:getHeight(), 0, 0, 2)
@@ -44,16 +62,17 @@ function love.draw()
         love.graphics.rectangle("fill", plat.x, plat.y, plat.width, plat.height)
    end
 
-   -- Draw collectibles if collected is false
-   if not collectibles.spring.collected then
-      love.graphics.setColor(0.8, 0.9, 0.2) -- yellow
-      love.graphics.rectangle("fill", collectibles.spring.x, collectibles.spring.y, collectibles.spring.width, collectibles.spring.height) 
-   end
+    -- Draw spring if not collected
+    if not collectibles.spring.collected then
+        love.graphics.setColor(1, 1, 1) -- reset color
+        love.graphics.draw(springImage, collectibles.spring.x, collectibles.spring.y, 0, springScaleX, springScaleY)
+    end
 
-   -- Draw jetpack if not collected
+    -- Draw jetpack if not collected
     if not collectibles.jetpack.collected then
-        love.graphics.setColor(1.0, 0.2, 0.2) -- red
-        love.graphics.rectangle("fill", collectibles.jetpack.x, collectibles.jetpack.y, collectibles.jetpack.width, collectibles.jetpack.height)
+        love.graphics.setColor(1, 1, 1) -- reset color
+        love.graphics.draw(jetpackImage, collectibles.jetpack.x, collectibles.jetpack.y, 0, jetpackScaleX, jetpackScaleY)
+
     end
 
     -- Draw instructions in top right corner
