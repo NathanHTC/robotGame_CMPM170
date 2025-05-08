@@ -12,6 +12,7 @@ function love.load()
     love.window.setTitle("Robot Game")
     love.window.setMode(800, 600)
 
+    local gameWon = false
 
     --Load Collectables
     springImage = love.graphics.newImage("assets/collectibles/spring.png")
@@ -73,6 +74,42 @@ function love.draw()
         love.graphics.setColor(1, 1, 1) -- reset color
         love.graphics.draw(jetpackImage, collectibles.jetpack.x, collectibles.jetpack.y, 0, jetpackScaleX, jetpackScaleY)
 
+    end
+
+    -- Draw win box
+    if not collectibles.winBox.reached then
+        love.graphics.setColor(1.0, 1.0, 0.0) -- bright yellow
+        love.graphics.rectangle("fill", collectibles.winBox.x, collectibles.winBox.y, collectibles.winBox.width, collectibles.winBox.height)
+    end
+
+    if gameWon then
+        -- Create a centered, large message box
+        local winMsg = "YOU WIN!"
+        local msgWidth = love.graphics.getFont():getWidth(winMsg) * 2
+        local msgHeight = love.graphics.getFont():getHeight() * 2
+        
+        -- Semi-transparent background
+        love.graphics.setColor(0, 0, 0, 0.8)
+        love.graphics.rectangle("fill", 
+            love.graphics.getWidth()/2 - msgWidth/2 - 20, 
+            love.graphics.getHeight()/2 - msgHeight/2 - 20, 
+            msgWidth + 40, 
+            msgHeight + 40)
+        
+        -- Draw border
+        love.graphics.setColor(1, 1, 0)
+        love.graphics.rectangle("line", 
+            love.graphics.getWidth()/2 - msgWidth/2 - 20, 
+            love.graphics.getHeight()/2 - msgHeight/2 - 20, 
+            msgWidth + 40, 
+            msgHeight + 40)
+        
+        -- Draw win text
+        love.graphics.setColor(1, 1, 0) -- Bright yellow text
+        love.graphics.print(winMsg, 
+            love.graphics.getWidth()/2 - msgWidth/2, 
+            love.graphics.getHeight()/2 - msgHeight/2, 
+            0, 2, 2) -- Scale text to be larger
     end
 
     -- Draw instructions in top right corner
@@ -164,6 +201,11 @@ function love.update(dt)
 
     if player.currentAnimation then
         player.currentAnimation:update(dt)
+    end
+
+    if not collectibles.winBox.reached and checkCollision(player, collectibles.winBox) then
+        collectibles.winBox.reached = true
+        gameWon = true
     end
 
     if isMoving == false then
