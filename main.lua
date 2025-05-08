@@ -4,17 +4,39 @@ player = require("player")
 platforms = require("platform")
 collectibles = require("collectibles")
 
+
 function love.load()
+    anim8 = require 'libraries/anim8'
+    love.graphics.setDefaultFilter("nearest", "nearest")
+
     love.window.setTitle("Robot Game")
     love.window.setMode(800, 600)
+
+    --Load Player Sprite
+    player.spriteSheet = love.graphics.newImage('assets/Character/PlayerSprite/Prototype_Character.png')
+    player.grid = anim8.newGrid(32,32, player.spriteSheet:getWidth(),player.spriteSheet:getHeight(), 0, 0, 2)
+
+    --Player Animation
+    player.animations.right = anim8.newAnimation(player.grid('1-4', 5), 0.2) -- row 5
+    player.animations.left = anim8.newAnimation(player.grid('1-4', 5), 0.2):flipH() -- flip for left
+    player.animations.jump = anim8.newAnimation(player.grid('1-1', 1), 1) -- row 2, first frame
+    player.currentAnimation = player.animations.right
+
+
+
+ 
     background = love.graphics.newImage("assets/background/background 3/origbig.png")
+    
+
 end
 
 function love.draw()
    love.graphics.draw(background, 0, 0)
-   -- Draw player
-   love.graphics.setColor(0.2, 0.6, 1.0) -- Blue
-   love.graphics.rectangle("fill", player.x, player.y, player.width, player.height)
+
+    -- Draw player animation
+    if player.currentAnimation then
+        player.currentAnimation:draw(player.spriteSheet, player.x, player.y, 0, 2, 2, 0, 0)
+    end
 
    -- Draw platforms
    love.graphics.setColor(0.5, 0.5, 0.5) -- gravity
@@ -37,14 +59,23 @@ function love.draw()
 end
 
 function love.update(dt)
+    local isMoving = false
+
    -- Horizontal movement
    if love.keyboard.isDown("left") or love.keyboard.isDown("a") then
       player.xVel = -player.speed
+      player.direction = "left"
+      player.currentAnimation = player.animations.left
+      isMoving = true
    elseif love.keyboard.isDown("right") or love.keyboard.isDown("d") then
       player.xVel = player.speed
+      player.direction = "right"
+      player.currentAnimation = player.animations.right
+      isMoving = true
    else
       player.xVel = 0
    end
+
 
    -- apply movement
    player.x = player.x + player.xVel * dt
@@ -80,6 +111,17 @@ function love.update(dt)
         player.yVel = -200
     end
 
+    if not player.onGround then
+        player.currentAnimation = player.animations.jump
+    end
+
+    if player.currentAnimation then
+        player.currentAnimation:update(dt)
+    end
+
+    if isMoving == false then
+        player.currentAnimation:gotoFrame(1) 
+    end
 
 end
 

@@ -11,7 +11,10 @@ local player = {
     gravity = 800,
     onGround = false,
     hasSpring = false,
-    hasJetpack = false
+    hasJetpack = false,
+    direction = "right", -- for flipping animation
+    animations = {},
+    currentAnimation = nil
 }
 
 return player
