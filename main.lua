@@ -3,6 +3,7 @@
 player = require("player")
 platforms = require("platform")
 collectibles = require("collectibles")
+inventory = require("inventory")
 
 
 function love.load()
@@ -14,9 +15,15 @@ function love.load()
 
     local gameWon = false
 
+    inventory.init()
+
     --Load Collectables
     springImage = love.graphics.newImage("assets/collectibles/spring.png")
     jetpackImage = love.graphics.newImage("assets/collectibles/jetpack.png")
+
+    -- Set item icons in inventory
+    inventory.itemDefinitions.spring.icon = springImage
+    inventory.itemDefinitions.jetpack.icon = jetpackImage
     
     -- Get original image sizes
     local springW, springH = springImage:getWidth(), springImage:getHeight()
@@ -113,37 +120,61 @@ function love.draw()
     end
 
     -- Draw instructions in top right corner
-    love.graphics.setColor(1, 1, 1) -- Set text color to white
-    local instructions = {
-        "Controls:",
-        "A/Left Arrow - Move Left",
-        "D/Right Arrow - Move Right",
-        "Space - Jump (with Spring)",
-        "W - Fly (with Jetpack)",
-        "",
-        "Items:",
-        "Yellow Box - Spring",
-        "Red Box - Jetpack"
-    }
+    if not inventory.visible then
+        love.graphics.setColor(1, 1, 1) -- Set text color to white
+        local instructions = {
+            "Controls:",
+            "A/Left Arrow - Move Left",
+            "D/Right Arrow - Move Right",
+            "Space - Jump (with Spring)",
+            "W - Fly (with Jetpack)",
+            "",
+            "Items:",
+            "Yellow Box - Spring",
+            "Red Box - Jetpack"
+        }
     
-    local x = love.graphics.getWidth() - 220 -- Position from right edge
-    local y = 20 -- Position from top
-    local lineHeight = 18
+        local x = love.graphics.getWidth() - 220 -- Position from right edge
+        local y = 20 -- Position from top
+        local lineHeight = 18
     
-    -- Draw a semi-transparent background for better readability
-    love.graphics.setColor(0, 0, 0, 0.7)
-    love.graphics.rectangle("fill", x - 10, y - 10, 210, #instructions * lineHeight + 10)
+        -- Draw a semi-transparent background for better readability
+        love.graphics.setColor(0, 0, 0, 0.7)
+        love.graphics.rectangle("fill", x - 10, y - 10, 210, #instructions * lineHeight + 10)
     
-    -- Draw the instructions text
-    love.graphics.setColor(1, 1, 1)
-    for i, line in ipairs(instructions) do
-        love.graphics.print(line, x, y + (i-1) * lineHeight)
+        -- Draw the instructions text
+        love.graphics.setColor(1, 1, 1)
+        for i, line in ipairs(instructions) do
+            love.graphics.print(line, x, y + (i-1) * lineHeight)
+        end
     end
 
+    -- Draw equipped items indicators
+    love.graphics.setColor(1, 1, 1)
+    local statusY = 50
+    
+    -- Show equipped status
+    if inventory.isEquipped("spring") then
+        love.graphics.draw(springImage, 20, statusY, 0, 0.05, 0.05)
+        love.graphics.print("Spring: Equipped", 0, statusY + 50)
+        statusY = statusY + 80
+    end
+    
+    if inventory.isEquipped("jetpack") then
+        love.graphics.draw(jetpackImage, 20, statusY, 0, 0.05, 0.05)
+        love.graphics.print("Jetpack: Equipped", 0, statusY + 50)
+    end
+    
+    -- Draw the inventory UI if visible
+    inventory.draw()
 end
 
 function love.update(dt)
     local isMoving = false
+
+    if inventory.visible then
+        return
+    end
 
    -- Horizontal movement
    if love.keyboard.isDown("left") or love.keyboard.isDown("a") then
@@ -165,11 +196,21 @@ function love.update(dt)
    player.x = player.x + player.xVel * dt
    player.y = player.y + player.yVel * dt
 
-   -- Apply gravity if not on onGround 
-   if not player.onGround or player.hasJetpack or player.hasSpring then
-      player.yVel = player.yVel + player.gravity * dt
-   end
-
+   -- Apply gravity regardless of jetpack - we'll just counteract it when using jetpack
+    player.yVel = player.yVel + player.gravity * dt
+    
+    -- Jetpack flying - only works if equipped
+    if inventory.isEquipped("jetpack") and love.keyboard.isDown("w") then
+        -- Apply upward thrust that counteracts gravity and provides some lift
+        -- This creates a more realistic jetpack feel with limited ascension speed
+        player.yVel = player.yVel - (player.gravity * 1.5) * dt
+        
+        -- Limit maximum upward velocity
+        if player.yVel < -250 then
+            player.yVel = -250
+        end
+    end
+    
     -- Platform collision
     for _, plat in ipairs(platforms) do
         if checkCollision(player, plat) and player.y + player.height <= plat.y + 10 and player.yVel >= 0 then
@@ -182,16 +223,16 @@ function love.update(dt)
     -- Collectible collision
     if not collectibles.spring.collected and checkCollision(player, collectibles.spring) then
          collectibles.spring.collected = true
-         player.hasSpring = true
+         inventory.addItem("spring")
     end
 
     if not collectibles.jetpack.collected and checkCollision(player, collectibles.jetpack) then
          collectibles.jetpack.collected = true
-         player.hasJetpack = true
+         inventory.addItem("jetpack")
     end
 
     -- Jetpack flying
-    if player.hasJetpack and love.keyboard.isDown("w") then
+    if inventory.isEquipped("jetpack") and love.keyboard.isDown("w") then
         player.yVel = -200
     end
 
@@ -215,10 +256,19 @@ function love.update(dt)
 end
 
 function love.keypressed(key)
-    if key == "space" and player.onGround and player.hasSpring then
+    if key == "i" then
+        inventory.toggleVisibility()
+    end
+
+    if key == "space" and player.onGround and inventory.isEquipped("spring") then
         player.yVel = player.jumpForce
         player.onGround = false
     end
+end
+
+function love.mousepressed(x, y, button)
+    -- Handle inventory clicks
+    inventory.mousepressed(x, y, button)
 end
 
 function checkCollision(a, b)
